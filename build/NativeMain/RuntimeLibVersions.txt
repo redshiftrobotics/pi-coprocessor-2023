@@ -1,0 +1,5 @@
+wpimath-cpp-2023.3-linuxarm64.2-linuxarm64 (edu.wpi.first.wpimath:wpimath-cpp:2023.3.2)
+wpinet-cpp-2023.3-linuxarm64.2-linuxarm64 (edu.wpi.first.wpinet:wpinet-cpp:2023.3.2)
+wpiutil-cpp-2023.3-linuxarm64.2-linuxarm64 (edu.wpi.first.wpiutil:wpiutil-cpp:2023.3.2)
+ntcore-cpp-2023.3-linuxarm64.2-linuxarm64 (edu.wpi.first.ntcore:ntcore-cpp:2023.3.2)
+cscore-jnicvstatic-2023.3-linuxarm64.2-linuxarm64 (edu.wpi.first.cscore:cscore-jnicvstatic:2023.3.2)

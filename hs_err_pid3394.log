@@ -1,0 +1,89 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  SIGSEGV (0xb) at pc=0x0000007f10072590, pid=3394, tid=3395
+#
+# JRE version: OpenJDK Runtime Environment (11.0.16+8) (build 11.0.16+8-post-Debian-1deb11u1)
+# Java VM: OpenJDK 64-Bit Server VM (11.0.16+8-post-Debian-1deb11u1, mixed mode, tiered, compressed oops, g1 gc, linux-aarch64)
+# Problematic frame:
+# C  0x0000007f10072590
+#
+# No core dump will be written. Core dumps have been disabled. To enable core dumping, try "ulimit -c unlimited" before starting Java again
+#
+# If you would like to submit a bug report, please visit:
+#   https://bugs.debian.org/openjdk-11
+# The crash happened outside the Java Virtual Machine in native code.
+# See problematic frame for where to report the bug.
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=localhost:42479,server=n,suspend=y -Dfile.encoding=UTF-8 frc.pi.Camera
+
+Host: AArch64, 4 cores, 7G, Debian GNU/Linux 11 (bullseye)
+Time: Fri Mar  3 02:55:33 2023 PST elapsed time: 87.015560 seconds (0d 0h 1m 27s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x0000007fa8018000):  JavaThread "main" [_thread_in_native, id=3395, stack(0x0000007fac6e4000,0x0000007fac8e4000)]
+
+Stack: [0x0000007fac6e4000,0x0000007fac8e4000],  sp=0x0000007fac8e1760,  free space=2037k
+Native frames: (J=compiled Java code, A=aot compiled Java code, j=interpreted, Vv=VM code, C=native code)
+C  0x0000007f10072590
+J 1085 c1 frc.pi.Camera.periodic()V (387 bytes) @ 0x0000007f90ff5848 [0x0000007f90ff5740+0x0000000000000108]
+C  0x000000008e2b6298
+
+Java frames: (J=compiled Java code, j=interpreted, Vv=VM code)
+J 1087  org.opencv.videoio.VideoCapture.read_0(JJ)Z (0 bytes) @ 0x0000007f9833394c [0x0000007f983338c0+0x000000000000008c]
+J 1085 c1 frc.pi.Camera.periodic()V (387 bytes) @ 0x0000007f90ff5848 [0x0000007f90ff5740+0x0000000000000108]
+j  frc.pi.Camera.main([Ljava/lang/String;)V+78
+v  ~StubRoutines::call_stub
+
+siginfo: si_signo: 11 (SIGSEGV), si_code: 2 (SEGV_ACCERR), si_addr: 0x0000007f10072590
+
+Register to memory mapping:
+
+R0=0x0000007fa87994d0
+R1=0x0000007f10072590
+R2=0x0000007fa8752790
+R3=0x000000000000d891
+R4=0x0000007fac8e1888
+R5=0x0000000000000000
+R6=0x000000000000d891
+R7=0x0000007fac8e1ac0
+R8=0x0000007fac8e1880
+R9=0x0000000042ff0000
+R10=0x0000007fac8e1ab8
+R11=0x0000000000000018
+R12=0x0000007f84cb2560
+R13=0x0000007fac8e2350
+R14=0x000000007fffffff
+R15=0x0000000000000000
+R16=0x0000007f658389e8
+R17=0x0000007f6561f060
+R18=0x0000000000000000
+R19=0x0000000000000000
+R20=0x0000007fac8e1930
+R21=0x0000000000000001
+R22=0x0000007fac8e1a58
+R23=0x0000007fac8e1880
+R24=0x0000000000000000
+R25=0x0000007f665f9000
+R26=0x0000007fac8e1818
+R27=0x0000007f665f9978
+R28=0x0000007fa8018000
+R29=0x0000007fac8e2070
+R30=0x0000007f66439cdc
+
+
+Registers:
+R0 =0x0000007fa87994d0 points into unknown readable memory: 0x0000007f10073c10 | 10 3c 07 10 7f 00 00 00
+R1 =0x0000007f10072590 points into unknown readable memory: 0x0000007f100715e0 | e0 15 07 10 7f 00 00 00
+R2 =0x0000007fa8752790 points into unknown readable memory: 0x0000007fa87994d0 | d0 94 79 a8 7f 00 00 00
+R3 =0x000000000000d891 is an unknown value
+R4 =0x0000007fac8e1888 is pointing into the stack for thread: 0x0000007fa8018000
+R5 =0x0 is NULL
+R6 =0x000000000000d891 is an unknown value
+R7 =0x0000007fac8e1ac0 is pointing into the stack for thread: 0x0000007fa8018000
+R8 =0x0000007fac8e1880 is pointing into the stack for thread: 0x0000007fa8018000
+R9 =

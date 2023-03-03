@@ -1,0 +1,12 @@
+[
+  {
+    "name": "PathWeaver",
+    "version": "2023.2.1",
+    "cpp": false
+  },
+  {
+    "name": "RobotBuilder",
+    "version": "2023.2.1",
+    "cpp": false
+  }
+]
