@@ -1,0 +1,23 @@
+{
+  "versions": [
+    "wpimath-cpp-2023.3-linuxarm64.2-linuxarm64 (edu.wpi.first.wpimath:wpimath-cpp:2023.3.2)",
+    "wpinet-cpp-2023.3-linuxarm64.2-linuxarm64 (edu.wpi.first.wpinet:wpinet-cpp:2023.3.2)",
+    "wpiutil-cpp-2023.3-linuxarm64.2-linuxarm64 (edu.wpi.first.wpiutil:wpiutil-cpp:2023.3.2)",
+    "ntcore-cpp-2023.3-linuxarm64.2-linuxarm64 (edu.wpi.first.ntcore:ntcore-cpp:2023.3.2)",
+    "cscore-jnicvstatic-2023.3-linuxarm64.2-linuxarm64 (edu.wpi.first.cscore:cscore-jnicvstatic:2023.3.2)"
+  ],
+  "linux": {
+    "arm64": [
+      "/linux/arm64/shared/libwpimath.so",
+      "/linux/arm64/shared/libwpinetjni.so",
+      "/linux/arm64/shared/libntcore.so",
+      "/linux/arm64/shared/libwpimathjni.so",
+      "/linux/arm64/shared/libwpiutiljni.so",
+      "/linux/arm64/shared/libwpinet.so",
+      "/linux/arm64/shared/libntcorejni.so",
+      "/linux/arm64/shared/libwpiutil.so",
+      "/linux/arm64/shared/libcscorejnicvstatic.so"
+    ]
+  },
+  "hash": "536b6588584aec1dd25839d465d28716"
+}
