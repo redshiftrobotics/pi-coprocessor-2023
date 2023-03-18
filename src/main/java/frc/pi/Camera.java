@@ -275,7 +275,7 @@ public class Camera {
 	}
 	
 	/** compress tag location transform to array of doubles */
-	private double[] compressTransform3d(Transform3d tagLocation) {
+	private double[] deconstructTransform3d(Transform3d tagLocation) {
 		return new double[] { tagLocation.getX(), tagLocation.getY(), tagLocation.getZ(),
 			tagLocation.getRotation().getQuaternion().getW(),
 			tagLocation.getRotation().getX(), tagLocation.getRotation().getY(),
@@ -349,7 +349,7 @@ public class Camera {
 				Transform3d tagLocation = tagLocations.get(tagId);
 
 				// Creates double array network table entry with Transform3d propoerties
-				entry.setDoubleArray(compressTransform3d(tagLocation));
+				entry.setDoubleArray(deconstructTransform3d(tagLocation));
 
 				System.out.println(String.format("Pi: Found April Tag #%s at distance of %.1f feet [%s]",
 						tagId, getDistance(tagLocation) / 304.8, System.currentTimeMillis()));
