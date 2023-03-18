@@ -256,7 +256,7 @@ public class Camera {
 		return pose3d.getTranslation().getNorm();
 	}
 
-	/**Check if tag should be consideded by checking if its ID is possible and if
+	/** Check if tag should be consideded by checking if its ID is possible and if
 	 * its decision margin is high enough
 	 */
 	private boolean isTagValid(AprilTagDetection tag) {
@@ -273,7 +273,8 @@ public class Camera {
 	private Transform3d adjustTransformToRobotFrontCenter(Transform3d tranformFromCamera) {
 		return tranformFromCamera.plus(PhysicalCameraConstants.CAMERA_POSITION_FROM_CENTER_CENTER);
 	}
-
+	
+	/** compress tag location transform to array of doubles */
 	private double[] compressTransform3d(Transform3d tagLocation) {
 		return new double[] { tagLocation.getX(), tagLocation.getY(), tagLocation.getZ(),
 			tagLocation.getRotation().getQuaternion().getW(),
