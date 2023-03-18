@@ -174,11 +174,9 @@ public class Camera {
 		aprilTagPoseEstimator = new AprilTagPoseEstimator(poseConfig);
 	}
 
-	/**
-	 * Gets position of tag relative to camera.
+	/** Gets position of tag relative to camera.
 	 * A 3d pose of a tag is a Transform3d(Translation3d(x: -right to +left, y: -up
 	 * to +down, z: +foward), Rotation3d(Quaternion(...)))
-	 * 
 	 * @param tag a AprilTagDetection
 	 * @return 3d pose of tag.
 	 */
@@ -190,11 +188,9 @@ public class Camera {
 		return aprilTagPoseEstimator.estimate(tag);
 	}
 
-	/**
-	 * Outlines and adds helpful data to diplay about a tag in Mat
-	 * 
-	 * @param mat       the mat to draw the decorations on
-	 * @param tag       the april tag you want to draw stuff for
+	/** Outlines and adds helpful data to diplay about a tag in Mat
+	 * @param mat the mat to draw the decorations on
+	 * @param tag the april tag you want to draw stuff for
 	 * @param tagPose3d the 3d pose of that tag
 	 */
 	private void decorateTagInImage(Mat mat, AprilTagDetection tag, Transform3d tagPose3d) {
@@ -260,8 +256,7 @@ public class Camera {
 		return pose3d.getTranslation().getNorm();
 	}
 
-	/**
-	 * Check if tag should be consideded by checking if its ID is possible and if
+	/**Check if tag should be consideded by checking if its ID is possible and if
 	 * its decision margin is high enough
 	 */
 	private boolean isTagValid(AprilTagDetection tag) {
@@ -270,24 +265,28 @@ public class Camera {
 				&& tag.getDecisionMargin() > AprilTagValueConstants.MIN_APRIL_TAG_DECISION_MARGIN;
 	}
 
-	/**
-	 * Convert tag location transform with origin at center of robot to a transform
+	/** Convert tag location transform with origin at center of robot to a transform
 	 * with origin at very center front of robot
-	 * 
 	 * @param tranformFromCamera transform3d with origin at camera
 	 * @return transform3d with origin at very center of robot
 	 */
-	public Transform3d adjustTransformToRobotFrontCenter(Transform3d tranformFromCamera) {
+	private Transform3d adjustTransformToRobotFrontCenter(Transform3d tranformFromCamera) {
 		return tranformFromCamera.plus(PhysicalCameraConstants.CAMERA_POSITION_FROM_CENTER_CENTER);
+	}
+
+	private double[] compressTransform3d(Transform3d tagLocation) {
+		return new double[] { tagLocation.getX(), tagLocation.getY(), tagLocation.getZ(),
+			tagLocation.getRotation().getQuaternion().getW(),
+			tagLocation.getRotation().getX(), tagLocation.getRotation().getY(),
+			tagLocation.getRotation().getZ() };
 	}
 
 	/**
 	 * @param aprilTags list of april tags
-	 * @param mat       Mat to decorate with found tags
-	 * @return Map with keys as tag id and values as 3D pose of tag. HashMap<tagId,
-	 *         pose3d>.
+	 * @param mat Mat to decorate with found tags
+	 * @return Map with keys as tag id and values as 3D pose of tag. HashMap<tagId, pose3d>.
 	 */
-	public HashMap<Integer, Transform3d> makeAprilTagLookup(AprilTagDetection[] apirlTags) {
+	private HashMap<Integer, Transform3d> makeAprilTagLookup(AprilTagDetection[] apirlTags) {
 		final HashMap<Integer, Transform3d> tagLocations = new HashMap<>();
 		for (AprilTagDetection tag : apirlTags) {
 
@@ -325,12 +324,14 @@ public class Camera {
 		// Makes hash map of found AprilTags. Tag Id is key and location is value.
 		HashMap<Integer, Transform3d> tagLocations = makeAprilTagLookup(detectedAprilTags);
 
+		// adjust april tag transforms to have origin at very center of robot
 		tagLocations.replaceAll(
 				(tagId, tagLocation) -> (tagLocation != null) ? adjustTransformToRobotFrontCenter(tagLocation) : null);
 
-		
+		// decorate all tags on the mat by outlining it, putting tag id on it, and
+		// putting distance on it
 		for (AprilTagDetection tag : detectedAprilTags) {
-			decorateTagInImage(grayMat, tag, tagLocations.get(tag.getId()));
+			decorateTagInImage(mat, tag, tagLocations.get(tag.getId()));
 		}
 
 		boolean tagFound = false;
@@ -347,12 +348,11 @@ public class Camera {
 				Transform3d tagLocation = tagLocations.get(tagId);
 
 				// Creates double array network table entry with Transform3d propoerties
-				entry.setDoubleArray(new double[] { tagLocation.getX(), tagLocation.getY(), tagLocation.getZ(),
-						tagLocation.getRotation().getQuaternion().getW(),
-						tagLocation.getRotation().getX(), tagLocation.getRotation().getY(),
-						tagLocation.getRotation().getZ() });
+				entry.setDoubleArray(compressTransform3d(tagLocation));
+
 				System.out.println(String.format("Pi: Found April Tag #%s at distance of %.1f feet [%s]",
 						tagId, getDistance(tagLocation) / 304.8, System.currentTimeMillis()));
+
 				tagFound = true;
 			} else {
 				entry.setDoubleArray(new double[] {});
