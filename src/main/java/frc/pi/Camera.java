@@ -111,7 +111,8 @@ public class Camera {
 				.replace("%width%", Integer.toString(PhysicalCameraConstants.CAMERA_RESOLUTION_WIDTH))
 				.replace("%height%", Integer.toString(PhysicalCameraConstants.CAMERA_RESOLUTION_WIDTH));
 
-		CvSource source = new CvSource("LifeCam", PixelFormat.kMJPEG, PhysicalCameraConstants.CAMERA_RESOLUTION_WIDTH, PhysicalCameraConstants.CAMERA_RESOLUTION_HEIGHT, 15);
+		CvSource source = new CvSource("LifeCam", PixelFormat.kMJPEG, PhysicalCameraConstants.CAMERA_RESOLUTION_WIDTH,
+				PhysicalCameraConstants.CAMERA_RESOLUTION_HEIGHT, 15);
 		source.setConfigJson(ConfigJson);
 
 		// Sets up server, the thing that recieves the image
@@ -120,7 +121,8 @@ public class Camera {
 		server.setSource(source);
 		CameraServer.addServer(server);
 
-		outputStream = CameraServer.putVideo("AprilTags", PhysicalCameraConstants.CAMERA_RESOLUTION_WIDTH, PhysicalCameraConstants.CAMERA_RESOLUTION_HEIGHT);
+		outputStream = CameraServer.putVideo("AprilTags", PhysicalCameraConstants.CAMERA_RESOLUTION_WIDTH,
+				PhysicalCameraConstants.CAMERA_RESOLUTION_HEIGHT);
 
 		// -------------- Set up Mats --------------
 
@@ -213,20 +215,25 @@ public class Camera {
 		Imgproc.line(mat, pt2, pt3, VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
 		Imgproc.line(mat, pt3, pt0, VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
 
-		
 		// Draw tag Id on tag
 		Size tagIdTextSize = addCenteredText(mat, Integer.toString(tag.getId()), 4, 4,
-		new Point(tag.getCenterX(), tag.getCenterY()));
-		
+				new Point(tag.getCenterX(), tag.getCenterY()));
+
 		// Draw distance to tag under tag Id
-		
+
 		final double distanceFeet = distanceMM / 304.8;
 		addCenteredText(mat, String.format("%.1f ft.", distanceFeet), 1, 2,
-		new Point(tag.getCenterX(), tag.getCenterY() + (tagIdTextSize.height * 0.7)));
+				new Point(tag.getCenterX(), tag.getCenterY() + (tagIdTextSize.height * 0.7)));
 
-		Imgproc.line(mat, new Point(tag.getCenterX(), tag.getCenterY()), new Point(tag.getCenterX() + tagPose3d.getX(), tag.getCenterY()), VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
-		Imgproc.line(mat, new Point(tag.getCenterX(), tag.getCenterY()), new Point(tag.getCenterX(), tag.getCenterY() + tagPose3d.getY()), VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
-		Imgproc.line(mat, new Point(tag.getCenterX(), tag.getCenterY()), new Point(tag.getCenterX() - tagPose3d.getZ()/10, tag.getCenterY() + tagPose3d.getZ()/10), VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
+		Imgproc.line(mat, new Point(tag.getCenterX(), tag.getCenterY()),
+				new Point(tag.getCenterX() + tagPose3d.getX(), tag.getCenterY()),
+				VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
+		Imgproc.line(mat, new Point(tag.getCenterX(), tag.getCenterY()),
+				new Point(tag.getCenterX(), tag.getCenterY() + tagPose3d.getY()),
+				VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
+		Imgproc.line(mat, new Point(tag.getCenterX(), tag.getCenterY()),
+				new Point(tag.getCenterX() - tagPose3d.getZ() / 10, tag.getCenterY() + tagPose3d.getZ() / 10),
+				VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
 	}
 
 	/** Add text centerd to point to mat */
@@ -249,7 +256,7 @@ public class Camera {
 	}
 
 	/** Returns distance to pose in mm */
-	public double getDistance(Transform3d pose3d) {
+	private double getDistance(Transform3d pose3d) {
 		return pose3d.getTranslation().getNorm();
 	}
 
@@ -264,8 +271,19 @@ public class Camera {
 	}
 
 	/**
+	 * Convert tag location transform with origin at center of robot to a transform
+	 * with origin at very center front of robot
+	 * 
+	 * @param tranformFromCamera transform3d with origin at camera
+	 * @return transform3d with origin at very center of robot
+	 */
+	public Transform3d adjustTransformToRobotFrontCenter(Transform3d tranformFromCamera) {
+		return tranformFromCamera.plus(PhysicalCameraConstants.CAMERA_POSITION_FROM_CENTER_CENTER);
+	}
+
+	/**
 	 * @param aprilTags list of april tags
-	 * @param mat Mat to decorate with found tags
+	 * @param mat       Mat to decorate with found tags
 	 * @return Map with keys as tag id and values as 3D pose of tag. HashMap<tagId,
 	 *         pose3d>.
 	 */
@@ -298,16 +316,20 @@ public class Camera {
 			detectedAprilTags = aprilTagDetector.detect(grayMat);
 		}
 
-		
-		AprilTagDetection[] filteredAprilTags = Arrays
-			.stream(detectedAprilTags)
-			.filter(this::isTagValid)
-			.toArray(AprilTagDetection[]::new);
+		// filter out invalid tags
+		detectedAprilTags = Arrays
+				.stream(detectedAprilTags)
+				.filter(this::isTagValid)
+				.toArray(AprilTagDetection[]::new);
 
 		// Makes hash map of found AprilTags. Tag Id is key and location is value.
-		final HashMap<Integer, Transform3d> tagLocations = makeAprilTagLookup(filteredAprilTags);
+		HashMap<Integer, Transform3d> tagLocations = makeAprilTagLookup(detectedAprilTags);
 
-		for (AprilTagDetection tag : filteredAprilTags) {
+		tagLocations.replaceAll(
+				(tagId, tagLocation) -> (tagLocation != null) ? adjustTransformToRobotFrontCenter(tagLocation) : null);
+
+		
+		for (AprilTagDetection tag : detectedAprilTags) {
 			decorateTagInImage(grayMat, tag, tagLocations.get(tag.getId()));
 		}
 

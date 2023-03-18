@@ -6,14 +6,23 @@ package frc.pi;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
+
 public final class Constants {
 	public static final class PhysicalCameraConstants {
 		public static final int CAMERA_ID = 0;
 
-		// Understading the focal length values: https://en.wikipedia.org/wiki/Camera_resectioning, https://en.wikipedia.org/wiki/Cardinal_point_(optics)
+		public static final Transform3d CAMERA_POSITION_FROM_CENTER_CENTER = new Transform3d(
+			new Translation3d(0, 0.5, 0.5),
+			new Rotation3d());
 
+			
 		public static final int CAMERA_FPS = 10;
 		public static final int CAMERA_FPS_MILLIS = 1000 / CAMERA_FPS;
+
+		// Understading the focal length values: https://en.wikipedia.org/wiki/Camera_resectioning, https://en.wikipedia.org/wiki/Cardinal_point_(optics)
 
 		// Microsoft LifeCam HD-3000 stuff https://github.com/FIRST-Tech-Challenge/FtcRobotController/blob/master/TeamCode/src/main/res/xml/teamwebcamcalibrations.xml
 		public static final int CAMERA_RESOLUTION_WIDTH = 640;
