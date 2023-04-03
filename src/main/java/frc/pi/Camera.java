@@ -36,8 +36,8 @@ import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
 import frc.pi.Constants.AprilTagValueConstants;
 import frc.pi.Constants.DetectionConfigConstants;
+import frc.pi.Constants.OperatorConstants;
 import frc.pi.Constants.PhysicalCameraConstants;
-import frc.pi.Constants.VideoDisplayConstants;
 
 public class Camera {
 	private final NetworkTableInstance inst;
@@ -74,7 +74,10 @@ public class Camera {
 	private final AprilTagDetector aprilTagDetector;
 	private final AprilTagPoseEstimator aprilTagPoseEstimator;
 
-	private final CvSource outputStream;
+	// private final CvSource outputStream;
+
+	// last time since we logged out april tags in periodic 
+	private long lastTimeMs = System.currentTimeMillis();
 
 	/**
 	 * Constructor for Camera
@@ -104,7 +107,8 @@ public class Camera {
 		capture.set(Videoio.CAP_PROP_FRAME_WIDTH, PhysicalCameraConstants.CAMERA_RESOLUTION_WIDTH);
 		capture.set(Videoio.CAP_PROP_FRAME_HEIGHT, PhysicalCameraConstants.CAMERA_RESOLUTION_HEIGHT);
 		capture.set(Videoio.CAP_PROP_FPS, PhysicalCameraConstants.CAMERA_FPS);
-
+		
+		// -------------- Set up sending stuff to shuffleboard --------------
 		// Sets up source, the thing that gives the image
 		final String ConfigJson = "{\"fps\":%fps%,\"height\":%height%,\"pixelformat\":\"mjpeg\",\"properties\":[{\"name\":\"connect_verbose\",\"value\":1},{\"name\":\"raw_brightness\",\"value\":133},{\"name\":\"brightness\",\"value\":45},{\"name\":\"raw_contrast\",\"value\":5},{\"name\":\"contrast\",\"value\":50},{\"name\":\"raw_saturation\",\"value\":83},{\"name\":\"saturation\",\"value\":41},{\"name\":\"white_balance_temperature_auto\",\"value\":true},{\"name\":\"power_line_frequency\",\"value\":2},{\"name\":\"white_balance_temperature\",\"value\":4500},{\"name\":\"raw_sharpness\",\"value\":25},{\"name\":\"sharpness\",\"value\":50},{\"name\":\"backlight_compensation\",\"value\":0},{\"name\":\"exposure_auto\",\"value\":3},{\"name\":\"raw_exposure_absolute\",\"value\":156},{\"name\":\"exposure_absolute\",\"value\":46},{\"name\":\"pan_absolute\",\"value\":0},{\"name\":\"tilt_absolute\",\"value\":0},{\"name\":\"zoom_absolute\",\"value\":0}],\"width\":%width%}"
 				.replace("%fps%", Integer.toString(PhysicalCameraConstants.CAMERA_FPS))
@@ -199,6 +203,7 @@ public class Camera {
 		// final double distanceMM = makePose2d(tagPose3d).getNorm();
 		final double distanceMM = getDistance(tagPose3d);
 
+
 		// Create point for each corner of tag
 		final Point pt0 = new Point(tag.getCornerX(0), tag.getCornerY(0));
 		final Point pt1 = new Point(tag.getCornerX(1), tag.getCornerY(1));
@@ -206,10 +211,10 @@ public class Camera {
 		final Point pt3 = new Point(tag.getCornerX(3), tag.getCornerY(3));
 
 		// Draw lines around box with corner points
-		Imgproc.line(mat, pt0, pt1, VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
-		Imgproc.line(mat, pt1, pt2, VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
-		Imgproc.line(mat, pt2, pt3, VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
-		Imgproc.line(mat, pt3, pt0, VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
+		Imgproc.line(mat, pt0, pt1, OperatorConstants.BOX_OUTLINE_COLOR, 5);
+		Imgproc.line(mat, pt1, pt2, OperatorConstants.BOX_OUTLINE_COLOR, 5);
+		Imgproc.line(mat, pt2, pt3, OperatorConstants.BOX_OUTLINE_COLOR, 5);
+		Imgproc.line(mat, pt3, pt0, OperatorConstants.BOX_OUTLINE_COLOR, 5);
 
 		// Draw tag Id on tag
 		Size tagIdTextSize = addCenteredText(mat, Integer.toString(tag.getId()), 4, 4,
@@ -221,32 +226,32 @@ public class Camera {
 		addCenteredText(mat, String.format("%.1f ft.", distanceFeet), 1, 2,
 				new Point(tag.getCenterX(), tag.getCenterY() + (tagIdTextSize.height * 0.7)));
 
-		Imgproc.line(mat, new Point(tag.getCenterX(), tag.getCenterY()),
-				new Point(tag.getCenterX() + tagPose3d.getX(), tag.getCenterY()),
-				VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
-		Imgproc.line(mat, new Point(tag.getCenterX(), tag.getCenterY()),
-				new Point(tag.getCenterX(), tag.getCenterY() + tagPose3d.getY()),
-				VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
-		Imgproc.line(mat, new Point(tag.getCenterX(), tag.getCenterY()),
-				new Point(tag.getCenterX() - tagPose3d.getZ() / 10, tag.getCenterY() + tagPose3d.getZ() / 10),
-				VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
+		// Imgproc.line(mat, new Point(tag.getCenterX(), tag.getCenterY()),
+		// 		new Point(tag.getCenterX() + tagPose3d.getX(), tag.getCenterY()),
+		// 		OperatorConstants.BOX_OUTLINE_COLOR, 5);
+		// Imgproc.line(mat, new Point(tag.getCenterX(), tag.getCenterY()),
+		// 		new Point(tag.getCenterX(), tag.getCenterY() + tagPose3d.getY()),
+		// 		OperatorConstants.BOX_OUTLINE_COLOR, 5);
+		// Imgproc.line(mat, new Point(tag.getCenterX(), tag.getCenterY()),
+		// 		new Point(tag.getCenterX() - tagPose3d.getZ() / 10, tag.getCenterY() + tagPose3d.getZ() / 10),
+		// 		OperatorConstants.BOX_OUTLINE_COLOR, 5);
 	}
 
 	/** Add text centerd to point to mat */
 	private Size addCenteredText(Mat mat, String text, int fontScale, int thickness, Point org) {
 		// Get width and height of text
-		final Size textSize = Imgproc.getTextSize(text, VideoDisplayConstants.FONT_TYPE, fontScale, thickness, null);
+		final Size textSize = Imgproc.getTextSize(text, OperatorConstants.FONT_TYPE, fontScale, thickness, null);
 
 		// Find point where the text goes if it were centered
 		// Y is added because Point(0, 0) is top left of Mat
 		final Point textCenter = new Point(org.x - (textSize.width / 2), org.y + (textSize.height / 2));
 
 		// Add text outline
-		Imgproc.putText(mat, text, textCenter, VideoDisplayConstants.FONT_TYPE,
-				fontScale, VideoDisplayConstants.WHITE, thickness + 2);
+		Imgproc.putText(mat, text, textCenter, OperatorConstants.FONT_TYPE,
+				fontScale, OperatorConstants.WHITE, thickness + 2);
 		// Add text
-		Imgproc.putText(mat, text, textCenter, VideoDisplayConstants.FONT_TYPE,
-				fontScale, VideoDisplayConstants.TEXT_COLOR, thickness);
+		Imgproc.putText(mat, text, textCenter, OperatorConstants.FONT_TYPE,
+				fontScale, OperatorConstants.TEXT_COLOR, thickness);
 
 		return textSize;
 	}
@@ -265,14 +270,14 @@ public class Camera {
 				&& tag.getDecisionMargin() > AprilTagValueConstants.MIN_APRIL_TAG_DECISION_MARGIN;
 	}
 
-	/** Convert tag location transform with origin at center of robot to a transform
-	 * with origin at very center front of robot
-	 * @param tranformFromCamera transform3d with origin at camera
-	 * @return transform3d with origin at very center of robot
-	 */
-	private Transform3d adjustTransformToRobotFrontCenter(Transform3d tranformFromCamera) {
-		return tranformFromCamera.plus(PhysicalCameraConstants.CAMERA_POSITION_FROM_CENTER_CENTER);
-	}
+	// /** Convert tag location transform with origin at center of robot to a transform
+	//  * with origin at very center front of robot
+	//  * @param tranformFromCamera transform3d with origin at camera
+	//  * @return transform3d with origin at very center of robot
+	//  */
+	// private Transform3d adjustTransformToRobotFrontCenter(Transform3d tranformFromCamera) {
+	// 	return tranformFromCamera.plus(PhysicalCameraConstants.CAMERA_POSITION_FROM_CENTER_CENTER);
+	// }
 	
 	/** compress tag location transform to array of doubles */
 	private double[] deconstructTransform3d(Transform3d tagLocation) {
@@ -322,20 +327,25 @@ public class Camera {
 				.filter(this::isTagValid)
 				.toArray(AprilTagDetection[]::new);
 
+		long currentTimeMs = System.currentTimeMillis();
+		if (detectedAprilTags.length > 0 && currentTimeMs - lastTimeMs > OperatorConstants.LOG_DELAY_MS) {
+			System.out.println(String.format("Found tags: %s", Arrays.toString(Arrays.stream(detectedAprilTags).map((tag) -> tag.getId()).toArray())));
+			lastTimeMs = currentTimeMs;
+		}
+
 		// Makes hash map of found AprilTags. Tag Id is key and location is value.
 		HashMap<Integer, Transform3d> tagLocations = makeAprilTagLookup(detectedAprilTags);
 
-		// adjust april tag transforms to have origin at very center of robot
-		tagLocations.replaceAll(
-				(tagId, tagLocation) -> (tagLocation != null) ? adjustTransformToRobotFrontCenter(tagLocation) : null);
+		// // adjust april tag transforms to have origin at very center of robot
+		// tagLocations.replaceAll(
+		// 		(tagId, tagLocation) -> (tagLocation != null) ? adjustTransformToRobotFrontCenter(tagLocation) : null);
 
 		// decorate all tags on the mat by outlining it, putting tag id on it, and
 		// putting distance on it
 		for (AprilTagDetection tag : detectedAprilTags) {
 			decorateTagInImage(mat, tag, tagLocations.get(tag.getId()));
 		}
-
-		boolean tagFound = false;
+		
 
 		// Sends data to network tables by looping through tagIds and putting data
 		// gotten from hash map into network table entry
@@ -351,17 +361,11 @@ public class Camera {
 				// Creates double array network table entry with Transform3d propoerties
 				entry.setDoubleArray(deconstructTransform3d(tagLocation));
 
-				System.out.println(String.format("Pi: Found April Tag #%s at distance of %.1f feet [%s]",
-						tagId, getDistance(tagLocation) / 304.8, System.currentTimeMillis()));
 
-				tagFound = true;
+				// tagFound = true;
 			} else {
 				entry.setDoubleArray(new double[] {});
 			}
-		}
-
-		if (!tagFound) {
-			System.out.println(String.format("Pi: No Tags [%s]", System.currentTimeMillis()));
 		}
 
 		outputStream.putFrame(mat);
