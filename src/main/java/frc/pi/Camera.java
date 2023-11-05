@@ -67,7 +67,7 @@ public class Camera {
 
 	private VideoCapture capture;
 
-	// Create mats here because they are quite exspensive to make
+	// Create mats here because they are quite expensive to make
 	private final Mat mat;
 	private final Mat grayMat;
 
@@ -106,13 +106,14 @@ public class Camera {
 		capture.set(Videoio.CAP_PROP_FPS, PhysicalCameraConstants.CAMERA_FPS);
 
 		// Sets up source, the thing that gives the image
+		// TODO: make this actual JSON file
 		final String ConfigJson = "{\"fps\":%fps%,\"height\":%height%,\"pixelformat\":\"mjpeg\",\"properties\":[{\"name\":\"connect_verbose\",\"value\":1},{\"name\":\"raw_brightness\",\"value\":133},{\"name\":\"brightness\",\"value\":45},{\"name\":\"raw_contrast\",\"value\":5},{\"name\":\"contrast\",\"value\":50},{\"name\":\"raw_saturation\",\"value\":83},{\"name\":\"saturation\",\"value\":41},{\"name\":\"white_balance_temperature_auto\",\"value\":true},{\"name\":\"power_line_frequency\",\"value\":2},{\"name\":\"white_balance_temperature\",\"value\":4500},{\"name\":\"raw_sharpness\",\"value\":25},{\"name\":\"sharpness\",\"value\":50},{\"name\":\"backlight_compensation\",\"value\":0},{\"name\":\"exposure_auto\",\"value\":3},{\"name\":\"raw_exposure_absolute\",\"value\":156},{\"name\":\"exposure_absolute\",\"value\":46},{\"name\":\"pan_absolute\",\"value\":0},{\"name\":\"tilt_absolute\",\"value\":0},{\"name\":\"zoom_absolute\",\"value\":0}],\"width\":%width%}"
 				.replace("%fps%", Integer.toString(PhysicalCameraConstants.CAMERA_FPS))
 				.replace("%width%", Integer.toString(PhysicalCameraConstants.CAMERA_RESOLUTION_WIDTH))
 				.replace("%height%", Integer.toString(PhysicalCameraConstants.CAMERA_RESOLUTION_WIDTH));
 
 		CvSource source = new CvSource("LifeCam", PixelFormat.kMJPEG, PhysicalCameraConstants.CAMERA_RESOLUTION_WIDTH,
-				PhysicalCameraConstants.CAMERA_RESOLUTION_HEIGHT, 15);
+				PhysicalCameraConstants.CAMERA_RESOLUTION_HEIGHT, PhysicalCameraConstants.CAMERA_FPS);
 		source.setConfigJson(ConfigJson);
 
 		// Sets up server, the thing that recieves the image
@@ -176,7 +177,7 @@ public class Camera {
 
 	/** Gets position of tag relative to camera.
 	 * A 3d pose of a tag is a Transform3d(Translation3d(x: -right to +left, y: -up
-	 * to +down, z: +foward), Rotation3d(Quaternion(...)))
+	 * to +down, z: +forward), Rotation3d(Quaternion(...)))
 	 * @param tag a AprilTagDetection
 	 * @return 3d pose of tag.
 	 */
@@ -220,19 +221,20 @@ public class Camera {
 		final double distanceFeet = distanceMM / 304.8;
 		addCenteredText(mat, String.format("%.1f ft.", distanceFeet), 1, 2,
 				new Point(tag.getCenterX(), tag.getCenterY() + (tagIdTextSize.height * 0.7)));
-
-		Imgproc.line(mat, new Point(tag.getCenterX(), tag.getCenterY()),
-				new Point(tag.getCenterX() + tagPose3d.getX(), tag.getCenterY()),
-				VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
-		Imgproc.line(mat, new Point(tag.getCenterX(), tag.getCenterY()),
-				new Point(tag.getCenterX(), tag.getCenterY() + tagPose3d.getY()),
-				VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
-		Imgproc.line(mat, new Point(tag.getCenterX(), tag.getCenterY()),
-				new Point(tag.getCenterX() - tagPose3d.getZ() / 10, tag.getCenterY() + tagPose3d.getZ() / 10),
-				VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
+		
+		// Quick test code to see how far away X, Y, and Z are from center. Use to test it out 
+		// Imgproc.line(mat, new Point(tag.getCenterX(), tag.getCenterY()),
+		// 		new Point(tag.getCenterX() + tagPose3d.getX(), tag.getCenterY()),
+		// 		VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
+		// Imgproc.line(mat, new Point(tag.getCenterX(), tag.getCenterY()),
+		// 		new Point(tag.getCenterX(), tag.getCenterY() + tagPose3d.getY()),
+		// 		VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
+		// Imgproc.line(mat, new Point(tag.getCenterX(), tag.getCenterY()),
+		// 		new Point(tag.getCenterX() - tagPose3d.getZ() / 10, tag.getCenterY() + tagPose3d.getZ() / 10),
+		// 		VideoDisplayConstants.BOX_OUTLINE_COLOR, 5);
 	}
 
-	/** Add text centerd to point to mat */
+	/** Add text centered to point to mat */
 	private Size addCenteredText(Mat mat, String text, int fontScale, int thickness, Point org) {
 		// Get width and height of text
 		final Size textSize = Imgproc.getTextSize(text, VideoDisplayConstants.FONT_TYPE, fontScale, thickness, null);
@@ -256,7 +258,7 @@ public class Camera {
 		return pose3d.getTranslation().getNorm();
 	}
 
-	/** Check if tag should be consideded by checking if its ID is possible and if
+	/** Check if tag should be considered by checking if its ID is possible and if
 	 * its decision margin is high enough
 	 */
 	private boolean isTagValid(AprilTagDetection tag) {
@@ -267,11 +269,11 @@ public class Camera {
 
 	/** Convert tag location transform with origin at center of robot to a transform
 	 * with origin at very center front of robot
-	 * @param tranformFromCamera transform3d with origin at camera
+	 * @param transformFromCamera transform3d with origin at camera
 	 * @return transform3d with origin at very center of robot
 	 */
-	private Transform3d adjustTransformToRobotFrontCenter(Transform3d tranformFromCamera) {
-		return tranformFromCamera.plus(PhysicalCameraConstants.CAMERA_POSITION_FROM_CENTER_CENTER);
+	private Transform3d adjustTransformToRobotFrontCenter(Transform3d transformFromCamera) {
+		return transformFromCamera.plus(PhysicalCameraConstants.CAMERA_POSITION_FROM_CENTER_CENTER);
 	}
 	
 	/** compress tag location transform to array of doubles */
@@ -287,9 +289,9 @@ public class Camera {
 	 * @param mat Mat to decorate with found tags
 	 * @return Map with keys as tag id and values as 3D pose of tag. HashMap<tagId, pose3d>.
 	 */
-	private HashMap<Integer, Transform3d> makeAprilTagLookup(AprilTagDetection[] apirlTags) {
+	private HashMap<Integer, Transform3d> makeAprilTagLookup(AprilTagDetection[] aprilTags) {
 		final HashMap<Integer, Transform3d> tagLocations = new HashMap<>();
-		for (AprilTagDetection tag : apirlTags) {
+		for (AprilTagDetection tag : aprilTags) {
 
 			// Gets position of tag and puts it in hash map with tagId as key
 			final Transform3d pose3d = getTagPose(tag);
@@ -348,7 +350,7 @@ public class Camera {
 				// Gets pose stored in hash map
 				Transform3d tagLocation = tagLocations.get(tagId);
 
-				// Creates double array network table entry with Transform3d propoerties
+				// Creates double array network table entry with Transform3d properties
 				entry.setDoubleArray(deconstructTransform3d(tagLocation));
 
 				System.out.println(String.format("Pi: Found April Tag #%s at distance of %.1f feet [%s]",
